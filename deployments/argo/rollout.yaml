@@ -1,28 +1,28 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: canary-demo-promote
+  name: webapp-rollout
 spec:
-  replicas: 4
-  strategy:
-    canary:
-      steps:
-      - setWeight: 25
-      - pause: {}
-      - setWeight: 50
-      - pause: {}
-      - setWeight: 75
-      - pause: {}
+  replicas: 3
   selector:
     matchLabels:
-      app: demo-app
+      app: webapp
   template:
     metadata:
       labels:
-        app: demo-app
+        app: webapp
     spec:
       containers:
-      - name: demo-container
-        image: nginx:1.19.1
-        ports:
-        - containerPort: 80 
+        - name: webapp
+          image: nginx:1.19.10
+          ports:
+            - containerPort: 80
+  strategy:
+    canary:
+      steps:
+        - setWeight: 50
+        - pause: {}
+        - analysis:
+            templates:
+              - templateName: mock-success-rate-check
+        - setWeight: 100
